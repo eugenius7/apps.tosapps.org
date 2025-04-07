@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aiwnios README | Temple Software</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a href="/">Home</a></li>
+      
+      <li><a href="/about/">About</a></li>
+      
+      <li><a href="/categories/">Categories</a></li>
+      
+      <li><a href="/tags/">Tags</a></li>
+      
+      <li><a href="/index.xml">Subscribe</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">Aiwnios README</span></h1>
+
+<h2 class="date">2025/04/07</h2>
+</div>
+
+<main>
+<h1 id="welcome-to-aiwnios">Welcome to Aiwnios</h1>
+<p>This is a HolyC Compiler/Runtime written for 64bit x86, aarch64 (includes <em><strong>MacOS</strong></em>) and RISC-V
+machines,although other architectures are planned for the future. This project is largely complete (aside from adding support for other architectures) so stay tuned.</p>
+<h2 id="support-table">Support table</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Architecture</th>
+          <th>OS</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>x86_64</td>
+          <td>Windows, Linux and FreeBSD</td>
+      </tr>
+      <tr>
+          <td>aarch64</td>
+          <td>Linux, FreeBSD and <em><strong>MacOS</strong></em></td>
+      </tr>
+      <tr>
+          <td>rv64 (RISC-V 64)</td>
+          <td>Linux</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="screenshot">Screenshot</h2>
+<div align="center">
+    <img src="img/scrot.png" alt="Aiwnios Screenshot" width="80%">
+</div> <!-- whoever did the <center> was retarded, thats HTML3 (!) and only applies to text -->
+<h2 id="building-aiwnios">Building Aiwnios</h2>
+<h3 id="freebsdlinux">FreeBSD/Linux</h3>
+<p>I develop on a lot of computers. For ARM I use an Apple M1 MacBook(MacOS x Asahi Linux). For RISC-V I use a <a href="https://wiki.sipeed.com/hardware/en/lichee/th1520/lpi4a/2_unbox.html">LicheePi4</a>. Make sure you buy one Trump imposes tariffs on sexy RISCV machines(I also test on a <a href="https://www.starfivetech.com/en/site/boards">StarFive VisionFive 2</a>). For X86_64 I use alot of old and new machines.</p>
+<p>To build Aiwnios, you will need a C compiler, SDL2 development libraries and headers, and cmake. LTO with Clang/lld is supported if you like something saucy.</p>
+<p>Build with the following after cloning:</p>
+<pre><code class="language-sh"># Build aiwnios
+mkdir build;cd build;
+cmake ..;
+make -j$(nproc);
+cd ..;
+
+#Bootstrap the HCRT2.BIN to run it
+./aiwnios -b;
+
+#Run the HCRT2.BIN
+./aiwnios; # Use -g or --grab-focus to grab the keyboard, -h for more options
+</code></pre>
+<p>If you want to create a cool package for your system, you can use <a href="https://cmake.org/cmake/help/book/mastering-cmake/chapter/Packaging%20With%20CPack.html">CPack</a>. Ill probably do this for you. The <code>cpack</code> is tested on Windows(NSIS). If you want to generate a FreeBSD <code>.pkg</code>,you&rsquo;ll need build cmake from source of FreeBSD because cpack has <em>experimental</em>  support for FreeBSD. Make sure you enable it.</p>
+<h3 id="windows-1011">Windows 10/11</h3>
+<ol>
+<li>Install <a href="https://msys2.org">msys2</a></li>
+<li>Run &ldquo;MSYS2 MINGW64&rdquo; (<em><strong>MUST</strong></em> BE MINGW64)</li>
+<li><code>pacman -Sy git mingw-w64-x86_64-{gcc,SDL2,cmake}</code></li>
+<li>Clone this repository</li>
+<li>Run the following after navigating to the directory</li>
+</ol>
+<pre><code>mkdir build
+cd build
+cmake ..
+ninja
+cd ..
+</code></pre>
+<ol start="5">
+<li>You will see the <code>aiwnios</code> binary in the directory</li>
+</ol>
+<h3 id="windows-7">Windows 7</h3>
+<ol>
+<li>Download <a href="https://winlibs.com/">WinLibs</a> and add to PATH: Make sure the mingw32/bin or mingw64/bin folder from the extracted download is in your PATH and its location doesn&rsquo;t contain any spaces</li>
+<li>Download and extract devel mingw <a href="https://github.com/libsdl-org/SDL/releases">SDL2</a></li>
+<li>Clone this repository and navigate to it</li>
+</ol>
+<pre><code>mkdir build
+cd build
+cmake -DSDL2_DIR=C:\Path\To\SDL2-devel-2.32.0-mingw\SDL2-2.32.0\x86_64-w64-mingw32\lib\cmake\SDL2 ..
+ninja
+cd ..
+</code></pre>
+<ol start="4">
+<li>You will see the <code>aiwnios</code> binary in the directory</li>
+</ol>
+<h3 id="macos">MacOS</h3>
+<p>Your on your own. Use homebrew to install packages, rest is same as FreeBSD</p>
+<h1 id="tui-mode">TUI Mode</h1>
+<div align="center">
+    <img src="img/tui.png" alt="TUI Screenshot" width="80%">
+</div> <!-- whoever did the <center> was retarded, thats HTML3 (!) and only applies to text -->
+<p>You can use the <code>--tui</code> to run a DolDoc enviroment in the terminal. <em><strong>Use <code>ExitAiwnios;</code> to leave.</strong></em></p>
+<h1 id="aiwniospack">AiwniosPack</h1>
+<p>You can make a standalone exe with an application(on MingW64(not msys unless you want all the libraries)).</p>
+<p>It works by appending an HCRT2.BIN and RamDisk at the end of the executable. SDL on windows is statically linked by default.</p>
+<p>You will need to include the <code>Src</code> and <code>Doc</code>(For <code>/Doc/StandBy.DD</code> and friends.)  directories in your Aiwnios packages.</p>
+<p>Do something like this:</p>
+<pre><code class="language-c">DelTree(&quot;Root&quot;);
+DirMk(&quot;Root&quot;);
+CopyTree(&quot;Doc&quot;,&quot;Root/Doc&quot;);
+CopyTree(&quot;Src&quot;,&quot;Root/Src&quot;);
+AiwniosPack(&quot;a2.exe&quot;,&quot;Beep;\n&quot;,&quot;Root&quot;);
+</code></pre>
+<h1 id="future">Future</h1>
+<p>I plan on adding something lit like an arm assembler from HolyC.</p>
+<h2 id="internals">Internals</h2>
+<p>In aiwnios,the secret sauce is in mainly in <code>*_backend.c</code>. There you will find the compiler.
+I have gutted out the TempleOS expression parsing code and replaced it with calls to <code>__HC_ICAdd_XXXXX</code>
+which will be used in <code>*_backend.c</code>. There is a super assembler in <code>*_asm.c</code>
+which you can use. Look at <code>ffi.c</code> to see how its used.</p>
+<p><strong>THIS COMPILER USES REVERSE POLISH NOTATION</strong>. And statements are reversed too so
+the last statement is at <code>head-&gt;base.next</code> and the first one ends at <code>head-&gt;base.last</code>.
+Email <em><a href="mailto:nrootconauto@gmail.com">nrootconauto@gmail.com</a></em> for more info(I hear my code is unreadable so I will stop
+explaining here).</p>
+<h2 id="sockets">Sockets</h2>
+<p>Aiwnios comes with a sockets API.</p>
+<p>Here is a simple server for you to play with until Nroot documents the Sockets API</p>
+<pre><code class="language-c">U0 Main () {
+  U8 buf[STR_LEN];
+  I64 fd;
+  I64 s=NetSocketNew;
+  CNetAddr *addr;
+  addr=NetAddrNew(&quot;127.0.0.1&quot;,8000);
+  NetBindIn(s,addr);
+  NetListen(s,4);
+  while(TRUE) {
+    if(-1==NetPollForRead(1,&amp;s)) {
+      Sleep(10);
+    } else {
+      fd=NetAccept(s,NULL);
+      while(-1==NetPollForRead(1,&amp;fd))
+        Sleep(10);
+      buf[NetRead(fd,buf,STR_LEN)]=0;
+      &quot;GOT:%s\n&quot;,buf;
+      NetClose(fd);
+    }
+    if(ScanKey)
+     break;
+  }
+  NetClose(s);
+  NetAddrDel(addr);
+}
+Main;
+</code></pre>
+<h2 id="extending-aiwnios">Extending Aiwnios</h2>
+<h3 id="make-an-ic_intern">Make an IC_intern</h3>
+<pre><code class="language-c">_intern IC_SQR F64 Sqr(F64);
+</code></pre>
+<h3 id="add-ir_code-in-aiwn_lexparserhparserc">Add IR_code in aiwn_lexparser.h/parser.c</h3>
+<p><code>aiwn_lexparser.h</code></p>
+<pre><code class="language-c">enum {
+/*Insert new IR code here */
+IC_GOTO,
+//...
+};
+//Later
+HC_IC_BINDINGH(HC_ICAdd_Sqr)
+</code></pre>
+<p><code>parser.c</code></p>
+<pre><code class="language-c">//Add this
+HC_IC_BINDING(HC_ICAdd_Sqr, IC_SQR);
+</code></pre>
+<h3 id="add-entires-for-the-ir-code-in-frontend-and-backend">Add entires for the IR code in frontend and backend</h3>
+<p>Add entires in these functions
+<code>parser.c</code></p>
+<pre><code class="language-c">CRPN *ICFwd(CRPN *rpn) {
+   //...
+   case IC_SQR:
+	goto unop;
+   //...
+}
+CRPN *ParserDumpIR(CRPN *rpn, int64_t indent) {
+	//...
+	case IC_SQR:
+	printf(&quot;`2&quot;);
+	//...
+}
+int64_t DolDocDumpIR(char *to, int64_t len, CRPN *rpn) ;
+int64_t AssignRawTypeToNode(CCmpCtrl *ccmp, CRPN *rpn) {
+	//...
+	case IC_SQR:
+    AssignRawTypeToNode(ccmp, rpn-&gt;base.next);
+    //Is a F64,use HashFind
+    rpn-&gt;ic_class = HashFind(&quot;F64&quot;, Fs-&gt;hash_table, HTT_CLASS, 1);
+    return rpn-&gt;raw_type = rpn-&gt;ic_class-&gt;raw_type;
+    break;
+	//...
+}
+</code></pre>
+<p><code>x86_64_backend.c</code></p>
+<pre><code class="language-c">static int64_t SpillsTmpRegs(CRPN *rpn) {
+	//...
+	case IC_POS:
+	case IC_SQR:
+	//....
+}
+static int64_t PushTmpDepthFirst(CCmpCtrl *cctrl, CRPN *r, int64_t spilled) {
+	//...
+	  case IC_SQR:
+    goto unop;
+
+	//...
+}
+static void SetKeepTmps(CRPN *rpn) {
+	//...
+	case IC_POS:
+	case IC_SQR: //Is a unop
+	//...
+}
+static int64_t __OptPassFinal(...) {
+	case IC_SQR:
+	next = ICArgN(rpn, 0);
+    code_off = __OptPassFinal(cctrl, next, bin, code_off);
+    code_off=PutICArgIntoReg(cctrl,&amp;next-&gt;arg,RT_F64,0,bin,code_off); //Fallback to reg 0
+    if(rpn-&gt;res.mode==MD_REG) {
+		AIWNIOS_ADD_CODE(ARM_fmulReg(rpn-&gt;res.reg,next-&gt;arg.reg,next-&gt;arg.reg));
+	} else {
+		tmp.mode=MD_REG;
+		tmp.raw_type=RT_F64;
+		tmp.reg=MFR(cctrl,0); //MAKE SURE TO MARK THE VARIABLE AS modified
+		AIWNIOS_ADD_CODE(ARM_fmulReg(tmp.reg,rpn-&gt;res.reg,next-&gt;arg.reg,next-&gt;arg.reg));
+		code_off=ICMov(cctrl,&amp;rpn-&gt;res,&amp;tmp,bin,code_off);//Move tmp into result.
+	}
+    break;
+}
+</code></pre>
+<p><code>Src/AIWNIOS_CodeGen.HC</code></p>
+<pre><code class="language-c">//At Start of file
+#ifdef IMPORT_AIWNIOS_SYMS
+import U8 *__HC_ICAdd_Sqr(U8 *);
+#else
+extern  U8 *__HC_ICAdd_Sqr(U8 *);
+#endif
+U8 *AiwniosCompile(CCmpCtrl *cc,I64 *res_sz=NULL,CDbgInfo **info) {
+//...
+    case IC_SQR:
+	  new=__HC_ICAdd_Sqr(cc2);
+	  break;
+//...
+}
+</code></pre>
+<p><code>main.c</code></p>
+<pre><code>static int64_t STK___HC_ICAdd_Sqr(int64_t *stk) {
+  return (int64_t)__HC_ICAdd_Sqr((CCodeCtrl *)stk[0]);
+}
+// main()
+PrsAddSymbol(&quot;__HC_ICAdd_Sqr&quot;, STK___HC_ICAdd_Sqr, 1);
+</code></pre>
+<h2 id="credits">Credits</h2>
+<ul>
+<li><a href="https://github.com/argtable/argtable3">argtable3</a></li>
+<li><a href="https://github.com/axr/solar-cmake/blob/master/TargetArch.cmake">Cmake architecture detector by axr</a></li>
+<li><a href="https://github.com/fujitsu/xbyak_aarch64">Xbyak Arm assembler</a></li>
+<li><a href="https://github.com/aminosbh/sdl2-cmake-modules">sdl2-cmake-modules</a></li>
+<li><a href="https://github.com/CAS-Atlantic/AArch64-Encoding">AArch64-Encodung</a></li>
+</ul>
+<hr>
+<h1 id="developer-manual">Developer manual</h1>
+<p>If you want something saucier and want to understand the sauce, look at <a href="DEVMAN.MD">the developer manual</a></p>
+
+</main>
+
+  <footer>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/math-code.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/katex/dist/katex.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/katex/dist/contrib/auto-render.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/render-katex.js" defer></script>
+
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/center-img.min.js" defer></script>
+
+  
+  <hr/>
+  © <a href="https://yihui.org">Yihui Xie</a> 2017 &ndash; 2025 | <a href="https://github.com/yihui">Github</a> | <a href="https://twitter.com/xieyihui">Twitter</a>
+  
+  </footer>
+  </body>
+</html>
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Development on Temple Software</title>
+    <link>http://localhost:1313/categories/development/</link>
+    <description>Recent content in Development on Temple Software</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 07 Apr 2025 12:51:50 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/development/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Aiwnios</title>
+      <link>http://localhost:1313/post/2025/04/07/aiwnios/</link>
+      <pubDate>Mon, 07 Apr 2025 12:51:50 +0200</pubDate>
+      <guid>http://localhost:1313/post/2025/04/07/aiwnios/</guid>
+      <description>&lt;h3 id=&#34;description&#34;&gt;Description&lt;/h3&gt;&#xA;&lt;p&gt;This is a HolyC Compiler/Runtime written for 64bit x86, aarch64 (includes &lt;em&gt;&lt;strong&gt;MacOS&lt;/strong&gt;&lt;/em&gt;) and RISC-V&lt;/p&gt;&#xA;&lt;h3 id=&#34;download-aiwnios&#34;&gt;Download Aiwnios&lt;/h3&gt;&#xA;&lt;p&gt;Aiwnios can be found on the main website (&lt;a href=&#34;http://localhost:1313/note/2025/04/07/aiwnios/&#34;&gt;README.MD&lt;/a&gt;).&lt;/p&gt;&#xA;&lt;p&gt;The project&amp;rsquo;s homepage at &lt;a href=&#34;https://github.com/nrootconauto/aiwnios&#34;&gt;https://github.com/nrootconauto/aiwnios&lt;/a&gt;.&lt;/p&gt;&#xA;&lt;h3 id=&#34;documentation&#34;&gt;Documentation&lt;/h3&gt;&#xA;&lt;p&gt;&lt;a href=&#34;http://localhost:1313/note/2025/04/07/aiwnios-manual/&#34;&gt;Documentation for aiwnios&lt;/a&gt; is online, as is &lt;a href=&#34;http://localhost:1313/note/2025/04/07/manual/&#34;&gt;documentation for most TempleOS software&lt;/a&gt;.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
