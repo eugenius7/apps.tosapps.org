@@ -3,6 +3,6 @@
 # Install
 
 ```sh
-hugo server
+hugo server -D
 ```
 
