@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Libraries on TOS Community</title>
+    <link>http://localhost:1313/categories/libraries/</link>
+    <description>Recent content in Libraries on TOS Community</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 09 Apr 2025 21:54:05 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/libraries/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HolyGL</title>
+      <link>http://localhost:1313/post/2025/04/09/holygl/</link>
+      <pubDate>Wed, 09 Apr 2025 21:54:05 +0200</pubDate>
+      <guid>http://localhost:1313/post/2025/04/09/holygl/</guid>
+      <description>&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;A divinely inspired graphics library for ZealOS.&lt;/p&gt;&#xA;&lt;p&gt;&lt;em&gt;&lt;strong&gt;Getting HolyGL&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;HolyGL can be found on the main TOS ftp server: (&lt;a href=&#34;https://github.com/Zeal-Operating-System/HolyGL&#34;&gt;https://github.com/Zeal-Operating-System/HolyGL&lt;/a&gt;).&lt;/p&gt;&#xA;&lt;p&gt;See &lt;a href=&#34;https://zealos.net/&#34;&gt;https://zealos.net/&lt;/a&gt; for bug reports,&#xA;help, announcements, documentation, and much more.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

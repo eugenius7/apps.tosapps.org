@@ -1,7 +1,7 @@
 ---
 date: '2025-04-07T13:20:39+02:00'
 draft: true
-title: 'Aiwnios Devman'
+title: 'Devloper Manual'
 ---
 
 # Devloper Manual (WIP)

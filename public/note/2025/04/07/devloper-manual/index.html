@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Devloper Manual | TOS Community</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a href="/">Home</a></li>
+      
+      <li><a href="/about/">About Us</a></li>
+      
+      <li><a href="/categories/">Categories</a></li>
+      
+      <li><a href="/software/">Software</a></li>
+      
+      <li><a href="/distros/">Distros</a></li>
+      
+      <li><a href="/doc/">Docs</a></li>
+      
+      <li><a href="/index.xml">Subscribe</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">Devloper Manual</span></h1>
+
+<h2 class="date">2025/04/07</h2>
+</div>
+
+<main>
+<h1 id="devloper-manual-wip">Devloper Manual (WIP)</h1>
+<p>This is intended for developes working on the C side,it is intended to be a companion to the source code,not a replacment for reading it.</p>
+<h1 id="aiwnios-lexer">Aiwnios Lexer</h1>
+<h2 id="what-is-a-lexer">What is a Lexer</h2>
+<p>A Lexer turns the source code into <strong>tokens</strong>. Tokens are like the atoms of source code. They are things like variable names,numbers,strings and characters. For example,the following source code</p>
+<pre><code>if 123:
+	&quot;Hello World&quot;
+</code></pre>
+<p>will be turned into these tokens:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Token</th>
+          <th>Type</th>
+          <th>Value</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>if</td>
+          <td>TK_NAME</td>
+          <td>&ldquo;if&rdquo;</td>
+      </tr>
+      <tr>
+          <td>123</td>
+          <td>TK_I64</td>
+          <td>123</td>
+      </tr>
+      <tr>
+          <td>:</td>
+          <td>&lsquo;:&rsquo;</td>
+          <td><em>None</em></td>
+      </tr>
+      <tr>
+          <td>&ldquo;Hello World&rdquo;</td>
+          <td>TK_STR</td>
+          <td>&ldquo;Hello World&rdquo;</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="making-a-lexer">Making a Lexer</h2>
+<p>To Lex some source code,we need a way of having text,so we will need to define some structures. Let&rsquo;s start with a block of text</p>
+<pre><code class="language-c">// This represents a peice of text being lexed(it could be a file macro, or such)
+typedef struct CLexFile {
+  //
+  // If we include a file,we put the current file on hold
+  // last will point to the &quot;old&quot; file we are in
+  //
+  struct CLexFile *last;
+
+  char *filename, *text;
+  int64_t ln, col, pos;
+} CLexFile;
+</code></pre>
+<p>In our Compiler,we will handle 1 token at a time. The token will be stored in cur_tok. The values will also be stored in the <code>CLexer</code> struct too.</p>
+<pre><code class="language-c">typedef struct {
+  CLexFile *file;
+  //
+  // These are our lexer values,I put them in a union to save memory
+  //
+  int64_t str_len;
+  union {
+    int64_t integer;
+    double flt;
+    char string[STR_LEN];
+  };
+  //
+  // Sometimes we are lexing and want to go back a charactor
+  // LEXF_USE_LAST_CHAR allows us to simulate this.
+  //
+#define LEXF_USE_LAST_CHAR 1
+#define LEXF_ERROR 2
+#define LEXF_NO_EXPAND 4 //Don't expand macros
+  int64_t flags, cur_char;
+  int64_t cur_tok;
+} CLexer;
+</code></pre>
+<p>We want to have token types. In my sexy compiler I use <em>ASCII</em> charactors for small  tokens,<strong>therefore all &ldquo;big&rdquo; tokens get stored above the ASCII range(0x100)</strong></p>
+<pre><code class="language-c">enum {
+  TK_I64 = 0x100,
+  TK_F64,
+  TK_NAME,
+  //... See lex.c
+  TK_KW_NOARGPOP,
+};
+</code></pre>
+<p>It is useful to keep track of our file position while lexing for diagnostics. So whenever we advance a character,so increase <code>CLexer.pos</code>,and update <code>CLexer.col</code> and <code>CLexer.ln</code>.</p>
+<p>Also,remember eariler when I said it is sometimes useful to &ldquo;go back a character&rdquo;. I simulate this via the <code>LEXF_USE_LAST_CHAR</code> flag. We also always store the last character in <code>Clexer.cur_char</code> . So let&rsquo;s rock</p>
+<pre><code class="language-c">int64_t LexAdvChr(CLexer *lex) {
+  //
+  //We want to simulate going back a charactor some times. Say we get a '.'
+  // It could mean a '.',a '...' or maybe even a TK_F64.so if one of these fails,
+  // we can go back in time and check the next item
+  //
+  if (lex-&gt;flags &amp; LEXF_USE_LAST_CHAR) {
+    lex-&gt;flags &amp;= ~LEXF_USE_LAST_CHAR;
+    return lex-&gt;cur_char;
+  }
+enter:;
+  CLexFile *file = lex-&gt;file, *last;
+  int64_t ret;
+  if (!lex-&gt;file)
+    return 0;
+  //We terminate the silly sauces with 0 as per ASCII nul character
+  if (ret = lex-&gt;file-&gt;text[lex-&gt;file-&gt;pos]) {
+    lex-&gt;file-&gt;pos++;
+    if (ret == '\n')
+      lex-&gt;file-&gt;ln++, lex-&gt;file-&gt;col = 0;
+    else
+      lex-&gt;file-&gt;col++;
+    return lex-&gt;cur_char = ret;
+  } else {
+    //Free all the assets of the previous file
+    last = file-&gt;last;
+    A_FREE(file-&gt;text);
+    A_FREE(file-&gt;filename);
+    A_FREE(file);
+    //
+    // last points to the last file we were in
+    // /*Contexts if file.HC */
+    // #include &quot;a.HC&quot; // lex-&gt;file-&gt;next is NULL
+    //
+    // /*Contexts of a.HC*/
+    // &quot;I like toads&quot;; // lex-&gt;file-&gt;next is &quot;file.HC&quot;'s CLexFile
+    lex-&gt;file = last;
+    goto enter;
+  }
+}
+</code></pre>
+<h3 id="starting-our-lexer">Starting our Lexer</h3>
+<p>Our lexer will take characters  are turn them into tokens,so it makes sense that our skeleton will look like a switch statement</p>
+<pre><code class="language-c">int64_t Lex(CLexer *lex) {
+re_enter:;
+  int64_t chr1 = LexAdvChr(lex), chr2;
+  int64_t has_base = 0, base = 10, integer = 0, decimal = 0, exponet = 0,
+          zeros = 0, idx = 0, old_flags, in_else;
+  FILE *f;
+  char macro_name[STR_LEN];
+  CHashDefineStr *define;
+  CLexFile *new_file;
+  switch (chr1)
+  case ' ':
+  case '\t':
+  case '\n':
+    //We &quot;re_enter&quot; the function to skip whitespace
+    goto re_enter;
+    break;
+  case '0' ... '9':
+    //
+    // Lex a number code goes here
+    // ...
+    // ...
+    //
+    return lex-&gt;cur_tok = TK_I64;
+    break;
+  //
+  // Account for more token types
+  // ...
+  // ...
+  //
+  case 0:
+    return lex-&gt;cur_tok = 0;
+  }
+  LexErr(lex, &quot;Unexpected charactor '%c'.&quot;, chr1);
+  return lex-&gt;cur_tok = ERR;
+}
+</code></pre>
+<p>As you can we,we take a character and we do something with it. So let&rsquo;s begin with filling in our (integer) number parsing code.</p>
+<h3 id="lexing-a-integer">Lexing a Integer</h3>
+<p>What is a digit??? You may be wondering why I&rsquo;m asking this,but I will explain. But first let&rsquo;s look at the properties of a (base-10) digit:</p>
+<pre><code class="language-c">1234;
+</code></pre>
+<p>The pattern is that each digit increases by a power of 10. So to get out digits value,we do:</p>
+<pre><code class="language-c">Value=digit*Pow(base,idx);
+</code></pre>
+<p>Hence our pattern we see looks like this:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Digit</th>
+          <th>Place</th>
+          <th>Formula</th>
+          <th>Final</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>4</td>
+          <td>0</td>
+          <td>4*pow(10,0)</td>
+          <td>4</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>1</td>
+          <td>3*pow(10,1)</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>2</td>
+          <td>2*pow(10,2)</td>
+          <td>2</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>3</td>
+          <td>1*pow(10,3)</td>
+          <td>1</td>
+      </tr>
+  </tbody>
+</table>
+<p><code>Pow</code>ing is an expensive operation,but we can simulate a <code>Pow</code> by multiplying the final value by  10 each time we get a digit and adding our digit. Let&rsquo;s try it again:</p>
+<pre><code class="language-c">Value=0;
+Value*=10;
+Value+=1; //Value==1
+Value*=10;
+Value+=2; //Value==12
+Value*=10;
+Value+=3; //Value=123
+Value*=10;
+Value+=4; //Value=1234
+</code></pre>
+<p>Before we put this into a function,let&rsquo;s think what happens if instead of 10 digits,we have 16. This is called a hexadecimal. The extra 6 digits are <code>ABCDEF</code>. So we would represent <code>0x101</code>  like this</p>
+<table>
+  <thead>
+      <tr>
+          <th>Digit</th>
+          <th>Place</th>
+          <th>Formula</th>
+          <th>Final</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>0</td>
+          <td>1*pow(16,0)</td>
+          <td>1</td>
+      </tr>
+      <tr>
+          <td>0</td>
+          <td>1</td>
+          <td>3*pow(16,1)</td>
+          <td>0</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>2</td>
+          <td>1*pow(16,2)</td>
+          <td>256</td>
+      </tr>
+      <tr>
+          <td>(This is useful as each hex digit is exactly 4 bits but more on this latter).</td>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tr>
+      <tr>
+          <td>Let&rsquo;s Lex:</td>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<pre><code class="language-c">static int64_t LexInt(CLexer *lex, int64_t base) {
+  int64_t chr1;
+  int64_t ret = 0, digit;
+  while (chr1 = LexAdvChr(lex)) {
+    switch (chr1) {
+      break;
+    case '0' ... '9':
+      digit = chr1 - '0';
+      break;
+    case 'A' ... 'F':
+      digit = chr1 - 'A' + 10;
+      break;
+    case 'a' ... 'f':
+      digit = chr1 - 'a' + 10;
+      break;
+    default:
+      //
+      // We consumed the current charactor,which may not be useful now,
+      // but it may be useful latter.
+      //
+      lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+      return ret;
+    }
+    if (digit &gt;= base)
+      goto err;
+    //This when repeated &quot;add&quot;s an empty digit,as each digit is a multipl of base
+    ret *= base;
+    ret += digit;
+  }
+  return ret;
+}
+</code></pre>
+<p>Before we can put this in our lexer body,we will need to check for <em>binary</em> or <em>hexadecimal</em> bases.</p>
+<pre><code class="language-c">  case '0' ... '9':
+    if (chr1 == '0') {
+      chr2 = LexAdvChr(lex);
+      switch (chr2) {
+        break;
+      case 'x':
+      case 'X':
+        chr1 = LexAdvChr(lex);
+        base = 16;
+        lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+        break;
+      case 'b':
+        chr1 = LexAdvChr(lex);
+        base = 2;
+        lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+        break;
+      case '0' ... '9':
+        lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+        break;
+      default:;
+        lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+        //We found a charctor but we didnt use it so put it back
+      } else
+	      //
+	      // We checked the first digit and checked for 0.
+	      // Use it again in LexInt as we found no use for it here.
+	      //
+	      lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+      integer = LexInt(lex, base);
+      if (integer == ERR &amp;&amp; (lex-&gt;flags &amp; LEXF_ERROR))
+        return lex-&gt;cur_tok = ERR;
+	  //
+	  // Check for 'e','E',or '.' and if we do find it,do some floating
+	  // point math.
+	  //
+	  // See &quot;Lex a Floating point&quot;
+      return lex-&gt;cur_tok = TK_I64;
+    break;
+</code></pre>
+<h3 id="lex-a-floating-point">Lex a Floating-Point</h3>
+<p>Parsing floating point&rsquo;s are much like parsing integers,but they contain 2 extra peices of data</p>
+<ul>
+<li>The decimal</li>
+<li>The exponet
+We can parse the exponet and the decimal much the same way,but because we have an exponet,we can start with that when we find a &lsquo;E&rsquo;/&rsquo;e&rsquo; after we find an integer</li>
+</ul>
+<pre><code class="language-c">      //
+      // Do this after we Lex an integer
+      //
+      switch (LexAdvChr(lex)) {
+        break;
+      case 'E':
+      case 'e':
+        decimal = 0;
+        if (base != 10) {
+          LexErr(lex, &quot;Expected a base 10 number for floating points.&quot;);
+          return lex-&gt;cur_tok = ERR;
+        }
+</code></pre>
+<p>In HolyC,Floating points can look like <code>123e10</code>,<code>123e+10</code>,<code>123e-10</code>. I will use base to hold the multpiler</p>
+<pre><code class="language-c">      exponet:
+        exponet=0;
+        base=1; //Holds the exponet multiplier
+        if('+'==(chr1=LexAdvChr(lex))) {
+        } else if('-'==chr1) {
+          base=-1;
+        } else if(isdigit(chr1))
+          goto eloop;
+        exponet=LexInt(lex,10);
+        exponet*=base;
+        lex-&gt;flags|=LEXF_USE_LAST_CHAR;
+        if (integer == ERR &amp;&amp; (lex-&gt;flags &amp; LEXF_ERROR)) {
+          LexErr(lex, &quot;Expected an exponet.&quot;);
+          return lex-&gt;cur_tok = ERR;
+        }
+        goto fin_f64;
+</code></pre>
+<p>When he encounter a &lsquo;.&rsquo;,we may have leading zeros so we should track of these as <code>123.004</code> is different than <code>123.4</code>. Every time we get a zero we increment <code>zeros</code> to signify this</p>
+<pre><code class="language-c">      case '.':
+      decimal_chk:
+        switch (chr1 = LexAdvChr(lex)) {
+          break;
+        case '0':
+          zeros++;
+          goto decimal_chk;
+          break;
+        case '1' ... '9':
+          lex-&gt;flags|=LEXF_USE_LAST_CHAR;
+          decimal = LexInt(lex,10);
+          lex-&gt;flags|=LEXF_USE_LAST_CHAR;
+          break;
+        default:;
+        }
+        if (lex-&gt;cur_char == 'e' || lex-&gt;cur_char == 'E') {
+          lex-&gt;flags&amp;=~LEXF_USE_LAST_CHAR;
+          goto exponet;
+        }
+        goto fin_f64;
+</code></pre>
+<p>Time to get lit and put it all together . But before we can do this is would be helpful to know how to put turn the integer value <code>decimal</code> into a floating point decimal. What we want to do is move the number <code>zeros</code> digits begind the &lsquo;.&rsquo; of the number.</p>
+<p>To do this we need the digit count of decimal to put it (fully) after the &lsquo;.&rsquo; . To do this we use a logarithm. A logirithm is the opposite of power,so it we get a logarithm of a number,it will return a number larger than the digit count(including 0 as a digit so we add 1 to the digit count).</p>
+<table>
+  <thead>
+      <tr>
+          <th>Number</th>
+          <th>Log10</th>
+          <th>floor(Log10(n))+1</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>123</td>
+          <td>2.08990511144</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td>100</td>
+          <td>2</td>
+          <td>3</td>
+      </tr>
+      <tr>
+          <td>1234</td>
+          <td>3.0913151597</td>
+          <td>4</td>
+      </tr>
+      <tr>
+          <td>1</td>
+          <td>0</td>
+          <td>1</td>
+      </tr>
+  </tbody>
+</table>
+<p>As you can see,<code>floor</code>ing will chop off the decimal point and we can add 1 to get the number of digits!!!</p>
+<p>What we need to do now is divide this by <code>1+digits+zero</code> digits.(which involves using a pow). So our final code is:</p>
+<pre><code class="language-c">fin_f64:
+        if (decimal) {
+          lex-&gt;flt =
+              integer + decimal * pow(10, -zeros - 1 - floor(log10(decimal)));
+        } else
+          lex-&gt;flt = integer;
+        lex-&gt;flt *= pow(10, exponet);
+        return lex-&gt;cur_tok = TK_F64;
+        break;
+</code></pre>
+<h3 id="taking-a-breatherlexing-wordsand-macros">Taking a Breather,Lexing words(and Macros).</h3>
+<p>Lexing words is pretty straightforward. We find a word character then we add it to <code>CLexer.string</code>.</p>
+<pre><code class="language-c">  case '_':
+  case '@':
+  case 'a' ... 'z':
+  case 'A' ... 'Z':
+    lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+    for (;;) {
+      switch (chr1 = LexAdvChr(lex)) {
+        break;
+      case '_':
+      case '@':
+      case 'a' ... 'z':
+      case 'A' ... 'Z':
+      case '0' ... '9':
+        if (idx + 1 &gt;= STR_LEN) {
+          LexErr(lex, &quot;Name is too long.&quot;);
+          return lex-&gt;cur_tok = ERR;
+        }
+        lex-&gt;string[idx++] = chr1;
+        break;
+      default:
+        lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+        lex-&gt;string[idx++] = 0;
+</code></pre>
+<p><strong>However</strong>,if we find a macro name(will be explained later),we should expand it if <code>LEXF_NO_EXPAND</code> in <code>CLexer.flags</code> is not set. When we find a macro,we can add it&rsquo;s text into a  <code>CLexFile</code> and lex it as if it just written in source code.</p>
+<pre><code class="language-c">      if (!(lex-&gt;flags &amp; LEXF_NO_EXPAND)) {
+          define = HashFind(lex-&gt;string, Fs-&gt;hash_table, HTT_DEFINE_STR, 1);
+          if (define) {
+            new_file = A_MALLOC(sizeof(CLexFile), NULL);
+            new_file-&gt;last = lex-&gt;file;
+            new_file-&gt;filename = A_STRDUP(define-&gt;data, NULL);
+            new_file-&gt;pos = new_file-&gt;col = new_file-&gt;ln = 0;
+            new_file-&gt;text=A_STRDUP(define-&gt;data);
+            lex-&gt;file = new_file;
+            goto re_enter;
+          }
+        }
+        //If we didnt find a macro it's a name
+        return lex-&gt;cur_tok = TK_NAME;
+      }
+    }
+    break;
+</code></pre>
+<p>We will need to lex a <code>#define</code> statement to use macros.</p>
+<pre><code class="language-c">  case '#':
+  if (TK_NAME == Lex(lex)) {
+    //
+    // Other preprocessor directives ...
+    //
+    if(!strcmp(lex-&gt;strng,&quot;define&quot;)) {
+</code></pre>
+<p>Let&rsquo;s set the <code>LEXF_NO_EXPAND</code> flag to avoid expanding the macro name(which would prevent us from redefining macros)</p>
+<pre><code class="language-c">        lex-&gt;flags|=LEXF_NO_EXPAND;
+        if (TK_NAME != Lex(lex)) {
+          LexErr(lex, &quot;Expected a name for #define.&quot;);
+          return lex-&gt;cur_tok = ERR;
+        }
+        //Reset the LEXF_NO_EXPAND bit
+        lex-&gt;flags&amp;=~LEXF_NO_EXPAND;
+</code></pre>
+<p>Let&rsquo;s allocate our macro</p>
+<pre><code class="language-c">        strcpy(macro_name, lex-&gt;string);
+        strcpy(lex-&gt;string, &quot;&quot;);
+        define = A_CALLOC(sizeof(CHashDefineStr), NULL);
+        define-&gt;base.str = A_STRDUP(macro_name, NULL);
+        define-&gt;base.type = HTT_DEFINE_STR;
+        define-&gt;src_link = LexSrcLink(lex, NULL);
+</code></pre>
+<p>While we get the characters for the macro,we may come across comments or a <code>\</code> character. We want to ignore the comments and the <code>\</code> character will make the comment span another line .</p>
+<pre><code class="language-c">        idx = 0;
+        while (chr1 = LexAdvChr(lex)) {
+          switch (chr1) {
+            break;
+          //
+          // When we get a '/',it could mean a singleline comment,a multiline-comment,or even just a slash
+          // So check for all orf these conditions
+          //
+          case '/':
+            if ('/' == (chr1 = LexAdvChr(lex))) {
+              //Is a single line macro
+              LexSkipTillNewLine(lex);
+            add_macro:
+              lex-&gt;string[idx++] = 0;
+              define-&gt;data = A_STRDUP(lex-&gt;string, NULL);
+              HashAdd(&amp;define-&gt;base, Fs-&gt;hash_table);
+              // Lex next item
+              goto re_enter;
+            } else if (chr1 == '*') { //Is a multiline comment
+              LexSkipMultlineComment(lex);
+              goto add_macro;
+            } else {
+              //Is just a '/',but we didnt use the last character so re-use it
+              lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+              lex-&gt;string[idx++] = '/';
+            }
+            break;
+          case '\\':
+            //Skip rest of current line
+            LexSkipTillNewLine(lex);
+            break;
+          case '\n':
+            goto add_macro;
+            break;
+          default:
+            lex-&gt;string[idx++] = chr1;
+          }
+        }
+      }
+</code></pre>
+<h3 id="taking-a-breather-again-parsing-basic-operators">Taking a Breather Again (Parsing basic operators)</h3>
+<p>Some tokens are make up of multiple characters. For example <code>-=</code>,<code>--</code>,<code>-&gt;</code> all start with <code>-</code>. So we start with <code>-</code> then check the next character. If nothing useful is found we re-use the character via <code>LEXF_USE_LAST_CHAR</code>(but return <code>-</code> as we found that before said character). In code it looks like this.</p>
+<pre><code class="language-c">case '-':
+    switch (chr1 = LexAdvChr(lex)) {
+      break;
+    case '-':
+      return lex-&gt;cur_tok = TK_DEC_DEC;
+      break;
+    case '&gt;':
+      return lex-&gt;cur_tok = TK_ARROW;
+      break;
+    case '=':
+      return lex-&gt;cur_tok = TK_SUB_EQ;
+      break;
+    default:
+      lex-&gt;flags |= LEXF_USE_LAST_CHAR;
+      return lex-&gt;cur_tok = '-';
+    }
+    break;
+</code></pre>
+<h3 id="parsing-stringscharacters">Parsing Strings/Characters</h3>
+<p>Charactors and strings are peices of text in TempleOS.Both of them share a simular syntax though,hence we will use a <code>LexString</code>function for both of them.</p>
+<pre><code class="language-c">// till is the terminator charactor
+// Returns 0 if good,else returns ERR
+static int64_t LexString(CLexer *lex, int64_t till) {
+  int64_t idx, chr1, hex;
+  for (idx = 0;;) {
+    switch (chr1 = LexAdvChr(lex)) {
+    case '\\':
+      //Escpae sequences here in the acutual source code
+      break;
+    default:
+    ins:
+      if (idx + 1 &gt;= STR_LEN) {
+        LexErr(lex, &quot;String exceedes STR_LEN chars.&quot;);
+        return ERR;
+      }
+      lex-&gt;string[idx++] = chr1;
+      break;
+    case '\'':
+    case '&quot;':
+      if (till == chr1)
+        goto fin;
+      goto ins;
+    }
+  }
+fin:
+  lex-&gt;string[idx++] = 0;
+  lex-&gt;str_len=idx;
+  return 0;
+}
+</code></pre>
+<p>However <strong>In TempleOS there is a difference between characters and strings.</strong></p>
+<ul>
+<li>Charactors have type <code>U64</code></li>
+<li>Strings have type <code>U8*</code>
+Considering that in <code>LexString</code> we filled the<code>CLexer.string</code> with the silly sauce(the string),we will need to turn the string <code>CLexer.string</code> into a <code>uint64_t</code>(<code>U64</code> in TempleOS) for a character.
+To do this we load an <code>uint64_t</code> from the data address of <code>CLexer.string</code>. We can do this in C via <code>lex-&gt;integer = *(uint64_t *)lex-&gt;string;</code></li>
+</ul>
+<p>So in total our string/character-lexing code would be.</p>
+<pre><code class="language-c">  case '&quot;':
+    if (ERR == LexString(lex, '&quot;'))
+      return lex-&gt;cur_tok = ERR;
+    return lex-&gt;cur_tok = TK_STR;
+    break;
+  case '\'':
+    //Fill All 8 bytes with zeros
+    memset(lex-&gt;string, 0, 8);
+    if (ERR == LexString(lex, '\''))
+      return ERR;
+    if (strlen(lex-&gt;string) &gt; 8) {
+      LexErr(lex, &quot;String constant too long!&quot;);
+      return ERR;
+    }
+    lex-&gt;integer = *(uint64_t *)lex-&gt;string;
+    return lex-&gt;cur_tok = TK_CHR;
+    break;
+</code></pre>
+<h3 id="processor-fun">Processor Fun</h3>
+<p>In TempleOS,there are amazing preprocessor directives that allow you to choose what parts of the code you want to compile.
+For example,if you want to check if a macro is define you can do this</p>
+<pre><code class="language-holyc">//Define a macro to tell the compiler we want SOME_FEATURE
+#define SOME_FEAUTRE 1
+#ifdef SOME_FEATURE
+U0 Feature() {
+    &quot;I like toads\n&quot;;
+}
+#endif
+</code></pre>
+<p>There is also an <code>#else</code> statement you can use too.</p>
+<pre><code class="language-holyc">//#define SOME_FEAUTRE 1
+#ifdef SOME_FEATURE
+U0 Feature() {
+    &quot;I like toads\n&quot;;
+}
+#else
+&quot;No toads here!!!\n&quot;;
+#endif
+</code></pre>
+<p>So let&rsquo;s check for a macro&rsquo;s existance in code</p>
+<pre><code class="language-c">if (!strcmp(lex-&gt;string, &quot;ifdef&quot;)) {
+        old_flags = lex-&gt;flags;
+        lex-&gt;flags |= LEXF_NO_EXPAND;
+        if (TK_NAME != Lex(lex)) {
+          LexErr(lex, &quot;Expected a name for #ifdef.&quot;);
+          return lex-&gt;cur_tok = ERR;
+        }
+        lex-&gt;flags = old_flags; //Restore old flags
+		//See next section
+</code></pre>
+<p>In AIWNIOS(the sexiest compiler that will ever exist once it is completed),I choose to ignore &ldquo;stray&rdquo; <code>#endif</code> statements because if an <code>#ifdef</code> passes,compilation will continue as usual. It isn&rsquo;t until an <code>#ifdef</code> fails do I skip code. <code>#else</code> will skip code too . So with that being said,let&rsquo;s look at the code</p>
+<pre><code class="language-c">      if (!HashFind(lex-&gt;string, Fs-&gt;hash_table, HTT_DEFINE_STR, 1)) {
+          in_else = 0;
+        if_fail:
+          idx = 1;
+          //
+          // idx is the current nesting level,it increases every time
+          // we encounter a #ifdef(and it's freinds)
+          //
+          // #ifdef A // idx==1
+          // #ifdef B // idx==2
+          // #ifdef C // idx==2
+          // #endif // idx==1
+          // #endif // idx==0
+          //
+        if_fail_loop:
+          while ('#' != (chr1 = LexAdvChr(lex))) {
+            if (chr1 == 0)
+              return lex-&gt;cur_tok = 0;
+            if (chr1 == ERR)
+              return lex-&gt;cur_tok = ERR;
+          }
+          if (TK_NAME != Lex(lex)) {
+            LexErr(lex, &quot;Stray '#' in program.&quot;);
+            return lex-&gt;cur_tok = ERR;
+          }
+          if (!in_else &amp;&amp; !strcmp(lex-&gt;string, &quot;else&quot;)) {
+            goto re_enter;
+          } else if (!strcmp(lex-&gt;string, &quot;endif&quot;)) {
+            if (!--idx)
+              goto re_enter;
+          } else if (__IsCondDirective(lex-&gt;string)) {
+            idx++;
+          }
+          goto if_fail_loop;
+        } else {
+        if_pass:;
+          //Fall-through
+        }
+        lex-&gt;flags = old_flags;
+        goto re_enter;
+      }
+</code></pre>
+<h1 id="aiwnios-parser">Aiwnios Parser</h1>
+<p>At the heart of the Aiwnios Parser is the <strong>shunting yard algorithm</strong> for parsing math expressions and <strong>recursive descent</strong> for the if statements and such. But before I jump into that we need to get into how the <strong>Intermediate Code</strong> is stored. The Intermediate code is stored in a circular queue in a <code>CCmpCtrl</code>. Because this uses reverse polish notation,I  insert the generated <code>CRPN</code>s in the <code>-&gt;code_ctrl-&gt;ir_code</code> member.</p>
+<h2 id="math-parsing">Math Parsing</h2>
+<h3 id="math-parsingshunting-yard-algorithm">Math Parsing(shunting yard algorithm)</h3>
+<p><code>ParseExpr</code> is the key for parsing math expressions. It uses a stack to store the intermediate codes in(in <code>ic_stk</code> and <code>prec_stk</code>). How it works is it generates <strong>Reverse Polish Notation</strong>. Values like numbers are inserted into the Queue first,then the operators come after.</p>
+<p>For example this expression</p>
+<pre><code>(1+2)*3
+</code></pre>
+<p>becomes something like this:</p>
+<pre><code>1 2 + 3 *
+</code></pre>
+<p>There is a gaint switch statement in <code>ParseExpr</code>. What is does for most things is do something like this</p>
+<pre><code>      Lex(ccmp-&gt;lex);
+      if (binop_before) {
+        // Unary
+        binop_before = 1; // Like a binop as it consumes the right item
+        prec         = 0;
+        type         = IC_NEG;
+      } else {
+        prec         = 6;
+        binop_before = 1;
+        type         = IC_SUB;
+      }
+</code></pre>
+<p>This will tell us the precedence  of the operator and tell us the its precedence and type. There is a varaible called <code>binop_before</code> This will tell us that the operator consumes the next part of the expression. For example, <strong>the <code>-</code> can be a negative operator or a subtract operator depending on if the previous token &ldquo;consumes&rdquo; it or or not</strong>.</p>
+<p>At the end of the switch statement is something like this</p>
+<pre><code>    if (type == IC_PAREN || type == IC_ARRAY_ACC) {
+      prec_stk[stk_ptr] = prec;
+      ic_stk[stk_ptr++] = type;
+    } else {
+      for (; stk_ptr;) {
+        if (ic_stk[stk_ptr - 1] == IC_PAREN ||
+            ic_stk[stk_ptr - 1] == IC_ARRAY_ACC)
+          goto fail;
+        if (prec_stk[stk_ptr - 1] &lt; prec)
+          goto pass;
+        if (prec_stk[stk_ptr - 1] &lt;= prec &amp;&amp; !IsRightAssoc(ic_stk[stk_ptr - 1]))
+          goto pass;
+        goto fail;
+      pass:
+        ic       = A_CALLOC(sizeof(CRPN), NULL);
+        ic-&gt;type = ic_stk[stk_ptr - 1];
+        QueIns(ic, ccmp-&gt;code_ctrl-&gt;ir_code);
+        AssignRawTypeToNode(ccmp, ic);
+        if (ic-&gt;type == IC_PRE_DEC || ic-&gt;type == IC_PRE_INC)
+          SetIncAmt(ccmp, ic);
+        stk_ptr--;
+      }
+    fail:
+      prec_stk[stk_ptr] = prec;
+      ic_stk[stk_ptr++] = type;
+    }
+</code></pre>
+<p>What this code does is it will push the operators that need to come first(lower precedence) to the stack. (Right associative operators come if they are equal to the current precedence too). Once this is done,we put the new operator on  the stack. (<strong>Parenthesis and Array Accesses are handled separately</strong>)</p>
+<p>When we find the end of the expression,we simply put all the operators into the end result.</p>
+<p>Here is an illustation:</p>
+<p><img src="img/math_parse.gif" alt="math_parse.gif"></p>
+<pre><code>fin:
+  while (stk_ptr) {
+    ic       = A_CALLOC(sizeof(CRPN), NULL);
+    ic-&gt;type = ic_stk[stk_ptr - 1];
+    QueIns(ic, ccmp-&gt;code_ctrl-&gt;ir_code);
+    AssignRawTypeToNode(ccmp, ic);
+    if (ic-&gt;type == IC_PRE_DEC || ic-&gt;type == IC_PRE_INC)
+      SetIncAmt(ccmp, ic);
+    stk_ptr--;
+  }
+</code></pre>
+<h3 id="math-parsing-2">Math Parsing 2</h3>
+<p>Time to get the nitty gritty. All things in HolyC have types assocaited with them,so I use a function to determine the type of a node called <code>AssignRawTypeToNode</code>. Because <strong>Reverse Polish Notation</strong> is fundamentally recursive,we can compute the type recursivley and store type to the <code>CRPN</code>.</p>
+<p>In Aiwnios,there are 2 members related to types,the <code>-&gt;raw_type</code>,<code>-&gt;ic_dim</code> and the <code>-&gt;ic_class</code>. The raw_type is the type used by the code-generator,and the <code>-&gt;ic_class</code> is the part used by HolyC.</p>
+<p>If you look closely at <code>ParseExpr</code>,you will see <code>SetIncAmt</code>(Used with <code>++</code> and <code>--</code> operators) which will use the class type to detirmine how many bytes to move the pointer by. Which brings us to our next part&hellip;</p>
+<h3 id="pointer-arithmetic">Pointer Arithmetic</h3>
+<p>Suprisingly,this isnt handled by <code>parser.c</code>,its handled by <code>optpass.c</code> in <code>OptPassExpandPtrs</code>.  Let&rsquo;s look at the entry for <code>IC_ADD</code></p>
+<pre><code>     if (a-&gt;ic_class-&gt;ptr_star_cnt || a-&gt;ic_dim) {
+        new       = A_CALLOC(sizeof(CRPN), cctrl-&gt;hc);
+        new-&gt;type = IC_MUL;
+        QueIns(new, b-&gt;base.last);
+        lit          = A_CALLOC(sizeof(CRPN), cctrl-&gt;hc);
+        lit-&gt;type    = IC_I64;
+        lit-&gt;integer = PtrWidthOfRPN(a);
+        QueIns(lit, new);
+        AssignRawTypeToNode(cctrl, new);
+      } else if ((b-&gt;ic_class-&gt;ptr_star_cnt || b-&gt;ic_dim) &amp;&amp;
+                 rpn-&gt;type != IC_ADD_EQ) {
+        new       = A_CALLOC(sizeof(CRPN), cctrl-&gt;hc);
+        new-&gt;type = IC_MUL;
+        QueIns(new, a-&gt;base.last);
+        lit          = A_CALLOC(sizeof(CRPN), cctrl-&gt;hc);
+        lit-&gt;type    = IC_I64;
+        lit-&gt;integer = PtrWidthOfRPN(b);
+        QueIns(lit, new);
+        AssignRawTypeToNode(cctrl, new);
+      }
+</code></pre>
+<p>We first check the <code>-&gt;ptr_star_cnt</code> member of <code>CHashClass</code>. This is the number of pointer stars on the member. Once we find the the width of the pointer using <code>PtrWidthOfRPN</code>. We multiply the offset by the width of the pointer <strong>by inserting the multiply expression before the offset <code>CRPN</code> beacause this is REVERSE POLISH NOTATION</strong> .</p>
+<p>For example if we have the expression</p>
+<pre><code>I64 *a,b;
+a+b;
+</code></pre>
+<p>It would be turned into a <code>CRPN</code> looking like this</p>
+<pre><code>+ a b
+</code></pre>
+<p>So our code would turn it into:</p>
+<pre><code>+ a * 8 b
+</code></pre>
+<h2 id="types">Types</h2>
+<h3 id="whats-in-a-chashclass">Whats in a <code>CHashClass</code></h3>
+<p>In Aiwnios,when we allocate a <code>CHashClass</code>,we actually allocate 6 <code>CHashClass</code>es as an array. <strong>The additional elements are used for pointer types of the class</strong>. Our <code>PrsNewClass</code> looks like this</p>
+<pre><code>CHashClass *PrsClassNew() {
+  int64_t     idx2 = 0;
+  CHashClass *cls  = A_CALLOC((STAR_CNT + 1) * sizeof(CHashClass), NULL);
+  for (idx2 = 0; idx2 != STAR_CNT; idx2++) {
+    cls[idx2].base.str     = NULL;
+    cls[idx2].raw_type     = RT_PTR;
+    cls[idx2].ptr_star_cnt = idx2;
+    if (idx2)
+      cls[idx2].sz = 8;
+    cls[idx2].use_cnt++;
+  }
+  return cls;
+}
+</code></pre>
+<p>A <code>CHashClass</code> has a linked list of members to use in the <code>-&gt;members_lst</code> member. This member has things like the <code>member_class</code> and <code>dim</code> member.</p>
+<h3 id="functions-are-classes-too">Functions are Classes Too</h3>
+<p>In TempleOS and Aiwnios,Functions have a base type of <code>CHashClass</code>. (In Aiwnios&rsquo;s C side ,its accessible from the <code>-&gt;base</code> member of <code>CHashFun</code>). When a class is used as a function,the <code>-&gt;reg</code> member stores the current register of the member,or <code>REG_NONE</code> is none is assigned. The flags are <code>MLF_DFT_AVAILABLE</code> is used with function arguments to tell if a argument has a default value(stored in <code>-&gt;dft_val</code> or <code>-&gt;dft_val_flt</code>). Static members have the flag <code>MLF_DFT_AVAILABLE</code> set.</p>
+<h2 id="parsing-everything-else">Parsing Everything Else</h2>
+<p>If you look at <code>parser.c</code> it may look look overwhelming,but it&rsquo;s actually quite easy. The parser has a function for parsing things like <code>goto</code> statement,<code>if</code> statements and more. The easiest one of these is <code>ParseScope</code> and it&rsquo;s source is here</p>
+<pre><code>int64_t PrsScope(CCmpCtrl *ccmp) {
+  CRPN   *ic, *old, *cur;
+  int64_t old_cnt;
+  if (ccmp-&gt;lex-&gt;cur_tok == '{') {
+    old = ccmp-&gt;code_ctrl-&gt;ir_code-&gt;next;
+    Lex(ccmp-&gt;lex);
+    while (ccmp-&gt;lex-&gt;cur_tok != '}') {
+      if (!PrsStmt(ccmp)) {
+        ParseErr(ccmp, &quot;Expected an expression.&quot;);
+        return 0;
+      }
+    }
+    Lex(ccmp-&gt;lex);
+    return 1;
+  }
+  return 0;
+}
+</code></pre>
+<p>This function will call <code>PrsStmt</code> which calls things like <code>PrrsGoto</code> and such. It can even call <code>PrsScope</code> for nested scopes. This is called <strong>Recursive Descent</strong> as each time we find something,we recurse into it.</p>
+<h3 id="storing-misc-data">Storing misc data</h3>
+<p>In Aiwnios,sometimes we need miscellaneous data for things like strings,label or jump-tables. To do this I use <code>CCodeMisc</code>s. To use a <code>CCodeMisc</code> use <code>CodeMiscNew(CCmpCtrtl*,int64_t type)</code>. Here is an example of making a string <code>CCodeMisc</code></p>
+<pre><code class="language-c">    case TK_STR:
+      binop_before = 0;
+      string       = PrsString(ccmp, &amp;str_len);
+      ic           = A_CALLOC(sizeof(CRPN), NULL);
+      QueInit(&amp;ic-&gt;base);
+      ic-&gt;type = IC_STR;
+      for (misc = ccmp-&gt;code_ctrl-&gt;code_misc-&gt;next;
+           ccmp-&gt;code_ctrl-&gt;code_misc != misc; misc = misc-&gt;base.next) {
+        if (misc-&gt;type == CMT_STRING)
+          if (misc-&gt;str_len == ccmp-&gt;lex-&gt;str_len)
+            if (0 == memcmp(misc-&gt;str, string, str_len)) {
+              ic-&gt;code_misc = misc;
+              goto found_str;
+            }
+      }
+      misc          = CodeMiscNew(ccmp, CMT_STRING);
+      misc-&gt;str_len = str_len;
+      misc-&gt;str     = string;
+      ic-&gt;code_misc = misc;
+    found_str:
+      QueIns(ic, ccmp-&gt;code_ctrl-&gt;ir_code);
+      goto next;
+</code></pre>
+<p>If you read the example(for parsing a string),you will see that we create the <code>CCodeMisc</code>. The string length is stored in <code>-&gt;str_len</code> and the string is stored in <code>-&gt;str</code>.</p>
+<h2 id="intermediate-code-reference">Intermediate Code Reference</h2>
+<table>
+  <thead>
+      <tr>
+          <th>Intermediate Code</th>
+          <th>Arguments</th>
+          <th>Meaning</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>IC_GOTO</td>
+          <td>()</td>
+          <td><code>-&gt;code_misc</code> points to a label to go to</td>
+      </tr>
+      <tr>
+          <td>IC_GOTO_IF</td>
+          <td>(condition)</td>
+          <td><code>-&gt;code_misc</code> points to a label to go to</td>
+      </tr>
+      <tr>
+          <td>IC_TO_F64</td>
+          <td>(expr)</td>
+          <td>Converts expression to a <code>F64</code></td>
+      </tr>
+      <tr>
+          <td>IC_TO_I64</td>
+          <td>(expr)</td>
+          <td>Converts an expression to a <code>I64</code></td>
+      </tr>
+      <tr>
+          <td>IC_LABEL</td>
+          <td>()</td>
+          <td><code>-&gt;code_misc</code> points to a label to set the addres of</td>
+      </tr>
+      <tr>
+          <td>IC_STATIC</td>
+          <td>()</td>
+          <td><code>-&gt;integer</code> is an offset from the statics area for a pointer</td>
+      </tr>
+      <tr>
+          <td>IC_LOCAL</td>
+          <td>()</td>
+          <td><code>-&gt;local_mem</code> points to a member of the current function.</td>
+      </tr>
+      <tr>
+          <td>IC_GLOBAL</td>
+          <td>()</td>
+          <td><code>-&gt;global_var</code> points to a function or a global variable</td>
+      </tr>
+      <tr>
+          <td>IC_NOP</td>
+          <td>()</td>
+          <td>Pushing P, this doesn&rsquo;t do anything</td>
+      </tr>
+      <tr>
+          <td>IC_NEG</td>
+          <td>(expr)</td>
+          <td>This is the negative of an expression</td>
+      </tr>
+      <tr>
+          <td>IC_POS</td>
+          <td>(expr)</td>
+          <td>Pushing P,this doesn&rsquo;t do anything</td>
+      </tr>
+      <tr>
+          <td>IC_STR</td>
+          <td>()</td>
+          <td>This takes a <code>-&gt;code_misc</code> of the string</td>
+      </tr>
+      <tr>
+          <td>IC_CHR</td>
+          <td>()</td>
+          <td>This is a charactor literal(<code>-&gt;integer</code>is the charactor)</td>
+      </tr>
+      <tr>
+          <td>IC_POW</td>
+          <td>(exp,base)</td>
+          <td>This is a power-of operator</td>
+      </tr>
+      <tr>
+          <td>IC_ADD</td>
+          <td>(b,a)</td>
+          <td>This adds numbers</td>
+      </tr>
+      <tr>
+          <td>IC_EQ</td>
+          <td>(src,dst)</td>
+          <td>This assigns a value</td>
+      </tr>
+      <tr>
+          <td>IC_SUB</td>
+          <td>(b,a)</td>
+          <td>This subtracts 2 values</td>
+      </tr>
+      <tr>
+          <td>IC_DIV</td>
+          <td>(b,a)</td>
+          <td>This divides 2 values</td>
+      </tr>
+      <tr>
+          <td>IC_MUL</td>
+          <td>(b,a)</td>
+          <td>This multiples 2 values</td>
+      </tr>
+      <tr>
+          <td>IC_DEREF</td>
+          <td>(ptr)</td>
+          <td>This dereferences a pointer</td>
+      </tr>
+      <tr>
+          <td>IC_AND</td>
+          <td>(b,a)</td>
+          <td>This does a bitwise AND</td>
+      </tr>
+      <tr>
+          <td>IC_ADDR_OF</td>
+          <td>(var)</td>
+          <td>This gets the address of an item</td>
+      </tr>
+      <tr>
+          <td>IC_XOR</td>
+          <td>(b,a)</td>
+          <td>This does a bitwise XOR</td>
+      </tr>
+      <tr>
+          <td>IC_MOD</td>
+          <td>(b,a)</td>
+          <td>This computes the remainder of a 2 values</td>
+      </tr>
+      <tr>
+          <td>IC_OR</td>
+          <td>(b,a)</td>
+          <td>This computes a bitwise OR</td>
+      </tr>
+      <tr>
+          <td>IC_LT</td>
+          <td>(b,a)</td>
+          <td>This computes a less-than operation</td>
+      </tr>
+      <tr>
+          <td>IC_GT</td>
+          <td>(b,a)</td>
+          <td>This computes a greater-than operation</td>
+      </tr>
+      <tr>
+          <td>IC_LNOT</td>
+          <td>(a)</td>
+          <td>This is a logical NOT operation</td>
+      </tr>
+      <tr>
+          <td>IC_BNOT</td>
+          <td>(a)</td>
+          <td>This is a binary NOT operation</td>
+      </tr>
+      <tr>
+          <td>IC_POST_INC</td>
+          <td>(a)</td>
+          <td>The increases the value by <code>-&gt;integer</code> amount</td>
+      </tr>
+      <tr>
+          <td>IC_POST_DEC</td>
+          <td>(a)</td>
+          <td>The decreases the value by <code>-&gt;integer</code> amount</td>
+      </tr>
+      <tr>
+          <td>IC_PRE_INC</td>
+          <td>(a)</td>
+          <td>The increases the value by <code>-&gt;integer</code> amount</td>
+      </tr>
+      <tr>
+          <td>IC_PRE_DEC</td>
+          <td>(a)</td>
+          <td>The decreases the value by <code>-&gt;integer</code> amount</td>
+      </tr>
+      <tr>
+          <td>IC_AND_AND</td>
+          <td>(b,a)</td>
+          <td>This does a logical AND operation</td>
+      </tr>
+      <tr>
+          <td>IC_OR_OR</td>
+          <td>(b,a)</td>
+          <td>This does a logical OR operation</td>
+      </tr>
+      <tr>
+          <td>IC_XOR_XOR</td>
+          <td>(b,a)</td>
+          <td>This does a logical XOR operation</td>
+      </tr>
+      <tr>
+          <td>IC_EQ_EQ</td>
+          <td>(b,a)</td>
+          <td>This checks if 2 values are equal</td>
+      </tr>
+      <tr>
+          <td>IC_NE</td>
+          <td>(b,a)</td>
+          <td>These computes if 2 values are not equal</td>
+      </tr>
+      <tr>
+          <td>IC_LE</td>
+          <td>(b,a)</td>
+          <td>This computes a less-than-or-equal operation</td>
+      </tr>
+      <tr>
+          <td>IC_GE</td>
+          <td>(b,a)</td>
+          <td>This computes a greater-than-or-equal operation</td>
+      </tr>
+      <tr>
+          <td>IC_LSH</td>
+          <td>(b,a)</td>
+          <td>This shifts <code>b</code> left by <code>a</code> bits</td>
+      </tr>
+      <tr>
+          <td>IC_RSH</td>
+          <td>(b,a)</td>
+          <td>This shifts <code>b</code> right by <code>a</code> bits</td>
+      </tr>
+      <tr>
+          <td>IC_ADD_EQ</td>
+          <td>(b,a)</td>
+          <td>This does an add-assign</td>
+      </tr>
+      <tr>
+          <td>IC_SUB_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a subtract-assign</td>
+      </tr>
+      <tr>
+          <td>IC_MUL_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a multiply-assign</td>
+      </tr>
+      <tr>
+          <td>IC_DIV_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a divide-assign</td>
+      </tr>
+      <tr>
+          <td>IC_LSH_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a left-shift-assign</td>
+      </tr>
+      <tr>
+          <td>IC_RSH_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a right-shift-assign</td>
+      </tr>
+      <tr>
+          <td>IC_AND_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a AND-assign</td>
+      </tr>
+      <tr>
+          <td>IC_OR_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a OR-assign</td>
+      </tr>
+      <tr>
+          <td>IC_XOR_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a XOR-assign</td>
+      </tr>
+      <tr>
+          <td>IC_MOD_EQ</td>
+          <td>(b,a)</td>
+          <td>This does a remainder-assign</td>
+      </tr>
+      <tr>
+          <td>IC_I64</td>
+          <td>()</td>
+          <td>This is a integer literal(value stored in <code>-&gt;integer</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_F64</td>
+          <td>()</td>
+          <td>This is a floating point literal(value stored in <code>-&gt;flt</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_RET</td>
+          <td>(return_value)</td>
+          <td>This will return from a function</td>
+      </tr>
+      <tr>
+          <td>IC_CALL</td>
+          <td>(function,args&hellip;)</td>
+          <td>This will call a function</td>
+      </tr>
+      <tr>
+          <td>IC_COMMA</td>
+          <td>(b,a)</td>
+          <td>This will do both <code>b</code> and <code>a</code>,returning <code>a</code>&rsquo;s value</td>
+      </tr>
+      <tr>
+          <td>IC_UNBOUNDED_SWITCH</td>
+          <td>(expr)</td>
+          <td>This does a unbounded switch(table is in <code>-&gt;code_misc</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_BOUNDED_SWITCH</td>
+          <td>(expr)</td>
+          <td>This does a normal switch(table is in <code>-&gt;code_misc</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_SUB_PROLOG</td>
+          <td>()</td>
+          <td>This starts a sub-routine</td>
+      </tr>
+      <tr>
+          <td>IC_SUB_CALL</td>
+          <td>()</td>
+          <td>This calls a sub-routine(<code>-&gt;code_misc</code> points to a label with a IC_SUB_PROLOG)</td>
+      </tr>
+      <tr>
+          <td>IC_SUB_END</td>
+          <td>()</td>
+          <td>This ends a sub-routine</td>
+      </tr>
+      <tr>
+          <td>IC_TYPECAST</td>
+          <td>(expr)</td>
+          <td>This does a bit-for-bit typecast based on the type of the IC_TYPECAST <code>CRPN</code></td>
+      </tr>
+      <tr>
+          <td>IC_BASE_PTR</td>
+          <td>()</td>
+          <td>This is used by optpass for variables not stored in registers(offset from base pointer is in <code>-&gt;integer</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_IREG</td>
+          <td>()</td>
+          <td>This is an integer register(<code>-&gt;integer</code> is the register number)</td>
+      </tr>
+      <tr>
+          <td>IC_FREG</td>
+          <td>()</td>
+          <td>This is an floating point register(<code>-&gt;integer</code> is the register number)</td>
+      </tr>
+      <tr>
+          <td>__IC_VARGS</td>
+          <td>(args)</td>
+          <td>This is used by the HolyC side to make vargs(<code>-&gt;length</code> is arg count)</td>
+      </tr>
+      <tr>
+          <td>__IC_ARG</td>
+          <td>(dst)</td>
+          <td>This is used by the HolyC to load an argument into a value</td>
+      </tr>
+      <tr>
+          <td>__IC_SET_FRAME_SIZE</td>
+          <td>()</td>
+          <td>This is used by the HolyC side to set the frame size(<code>-&gt;integer</code> is the frame size)</td>
+      </tr>
+      <tr>
+          <td>IC_RELOC</td>
+          <td>()</td>
+          <td>This gets the address of a symbol&rsquo;s relocation(<code>-&gt;code_misc</code> has a type of <code>CMT_RELOC_U64</code>)</td>
+      </tr>
+      <tr>
+          <td>__IC_CALL</td>
+          <td>(function,args&hellip;)</td>
+          <td>This calls a function,used by HolyC side</td>
+      </tr>
+      <tr>
+          <td>__IC_STATICS_SIZE</td>
+          <td>()</td>
+          <td>This sets the size of the static data area,used by the HolyC side</td>
+      </tr>
+      <tr>
+          <td>__IC_STATIC_REF</td>
+          <td>()</td>
+          <td>This is a value in the static data area,used by the HolyC side</td>
+      </tr>
+      <tr>
+          <td>__IC_SET_STATIC_DATA</td>
+          <td>()</td>
+          <td>Sets the data in the static data area,(<code>-&gt;code_misc</code> has a type of <code>CMT_STATIC_DATA</code>)</td>
+      </tr>
+      <tr>
+          <td>IC_SHORT_ADDR</td>
+          <td>()</td>
+          <td>Like an IC_RELOC,but the address is short</td>
+      </tr>
+      <tr>
+          <td>IC_RAW_BYTES</td>
+          <td>()</td>
+          <td>This stores raw bytes into the code(<code>-&gt;len</code> and <code>-&gt;raw_types</code> will tell you what the raw bytes are)</td>
+      </tr>
+      <tr>
+          <td>IC_GET_VARGS_PTR</td>
+          <td>(dst)</td>
+          <td>This gets the vargs poinnter and stored it in dst</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="sexy-register-allocator">Sexy Register Allocator</h2>
+<h3 id="live-variable-analysis">Live Variable Analysis</h3>
+<p>The register allocator works by first doing <a href="https://en.wikipedia.org/wiki/Live-variable_analysis">live variable analysis</a>. This means it detirmines where the varaibles are being used or not being used:</p>
+<p><img src="img/live_var.bmp" alt="live"></p>
+<p>How I do this is I is I first mark which registers we use or kill(kill the old value by assigning into it),see <code>CRPN-&gt;use_regs</code> and <code>CRPN-&gt;kil_regs</code>.</p>
+<p>Then I construct a control flow graph with the <code>CRPN-&gt;user_data</code> and <code>CRPN-&gt;user_data2</code> being the outgoing and incoming <code>CRPN</code>s. Each node inherits its successors&rsquo; live registers.</p>
+<h3 id="graph-coloring">Graph Coloring</h3>
+<p>I use a graph alogirthm called graph coloring. This means I create an &ldquo;interference graph&rdquo; then make sure each register in the graph is not a adjacent to another register that is alive at the same time(so no register conflicts).</p>
+<p>This allows registers to be re-used for other varaibles to make the code sexier.</p>
+<p><img src="img/graph_color.bmp" alt="graph coloring"></p>
+<h3 id="sexy-number-renumbering">Sexy Number Renumbering</h3>
+<p>Using the variables in a graph may get very crowded. To do this,I seperate the variables into &ldquo;sub-variables&rdquo; in GenerateRenumbersForVar. I call these sub-variables &ldquo;numbers&rdquo; as I name the &ldquo;var.1&rdquo; or &ldquo;var.2&rdquo; etc.</p>
+<p>To do this I first find the groups of nodes connected by a variable&rsquo;s being alive(InfectAdjacent). Once I find the groups I create psuedo-members.</p>
+<p>Consider this graph,say we only have 3 registers to use,E cannot be stuffed in a register as we dont have enough registers for it.</p>
+<p><img src="img/numbering.bmp" alt="Value numbering"></p>
+<p>We can make more room by dividing our register usage into numbered sections</p>
+<p><img src="img/numbering2.bmp" alt="Value numbering2"></p>
+
+</main>
+
+  <footer>
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/math-code.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/katex/dist/katex.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/katex/dist/contrib/auto-render.min.js" defer></script>
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/render-katex.js" defer></script>
+
+<script src="//cdn.jsdelivr.net/npm/@xiee/utils/js/center-img.min.js" defer></script>
+
+  
+  <hr/>
+  All rights reserved © 2000-2025 Most Holy Family Monastery | <a href="https://vaticancatholic.com">vaticancatholic.com</a>
+  
+  </footer>
+  </body>
+</html>
+

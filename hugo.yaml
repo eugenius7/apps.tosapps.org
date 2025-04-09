@@ -1,6 +1,6 @@
 baseURL: https://example.org/
 languageCode: en-us
-title: TOS Applications
+title: TOS Community
 theme: ["hugo-xmin"]
 
 googleAnalytics: ""
@@ -17,21 +17,27 @@ menu:
     - name: Home
       url: ""
       weight: 1
-    - name: About
+    - name: About Us
       url: "about/"
       weight: 2
     - name: Categories
       url: "categories/"
       weight: 3
-    - name: Tags
-      url: "tags/"
+    - name: Software
+      url: "software/"
       weight: 4
+    - name: Distros
+      url: "distros/"
+      weight: 5
+    - name: Docs
+      url: "doc/"
+      weight: 6
     - name: Subscribe
       url: "index.xml"
 
 params:
   description: "A website built through Hugo and blogdown."
-  footer: "&copy; [Yihui Xie](https://yihui.org) 2017 -- {Year} | [Github](https://github.com/yihui) | [Twitter](https://twitter.com/xieyihui)"
+  footer: "All rights reserved &copy; 2000-{Year} Most Holy Family Monastery | [vaticancatholic.com](https://vaticancatholic.com)"
 
 markup:
   highlight:

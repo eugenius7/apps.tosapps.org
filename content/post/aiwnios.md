@@ -14,10 +14,12 @@ This is a HolyC Compiler/Runtime written for 64bit x86, aarch64 (includes ***Mac
 
 ***Getting Aiwnios***
 
-Aiwnios can be found on here ([README.MD](/note/2025/04/07/aiwnios/)).
+Aiwnios can be found on the main TOS ftp server: ([README.MD](/note/2025/04/07/aiwnios/)).
 
-The project's homepage at [https://github.com/nrootconauto/aiwnios](https://github.com/nrootconauto/aiwnios).
+See [https://github.com/nrootconauto/aiwnios](https://github.com/nrootconauto/aiwnios) for bug reports,
+help, announcements, documentation, and much more.
+
 
 ***Documentation***
 
-[Documentation for aiwnios](/note/2025/04/07/aiwnios-manual/) is online, as is [documentation for most TempleOS software](/note/2025/04/07/manual/).
+[Documentation for aiwnios](/note/2025/04/07/aiwnios-manual/) is online, as is [documentation for most TempleOS software](/software/).

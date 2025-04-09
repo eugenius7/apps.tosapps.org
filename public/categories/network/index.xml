@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Network on TOS Community</title>
+    <link>http://localhost:1313/categories/network/</link>
+    <description>Recent content in Network on TOS Community</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 09 Apr 2025 21:52:46 +0200</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/network/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Slon</title>
+      <link>http://localhost:1313/post/2025/04/09/slon/</link>
+      <pubDate>Wed, 09 Apr 2025 21:52:46 +0200</pubDate>
+      <guid>http://localhost:1313/post/2025/04/09/slon/</guid>
+      <description>&lt;p&gt;&lt;em&gt;&lt;strong&gt;Introduction&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;A Mastodon-compatible fediverse server for TempleOS&lt;/p&gt;&#xA;&lt;p&gt;&lt;em&gt;&lt;strong&gt;Getting Slon&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;Slon can be found on the main TOS ftp server: (&lt;a href=&#34;https://github.com/slon-project/slon&#34;&gt;https://github.com/slon-project/slon&lt;/a&gt;).&lt;/p&gt;&#xA;&lt;p&gt;See &lt;a href=&#34;https://slon-project.org/&#34;&gt;https://slon-project.org/&lt;/a&gt; for bug reports,&#xA;help, announcements, documentation, and much more.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

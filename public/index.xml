@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Home on TOS Applications</title>
+    <title>Home on TOS Community</title>
     <link>https://example.org/</link>
-    <description>Recent content in Home on TOS Applications</description>
+    <description>Recent content in Home on TOS Community</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Jun 2017 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 01 Jan 0001 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://example.org/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Another Note on A blogdown Tutorial</title>
-      <link>https://example.org/note/2017/06/14/another-note/</link>
-      <pubDate>Wed, 14 Jun 2017 00:00:00 +0000</pubDate>
-      <guid>https://example.org/note/2017/06/14/another-note/</guid>
-      <description>&lt;p&gt;I just discovered &lt;a href=&#34;https://www.apreshill.com/blog/2020-12-new-year-new-blogdown/&#34;&gt;an awesome tutorial&lt;/a&gt; on &lt;strong&gt;blogdown&lt;/strong&gt; written by Alison. I have to admit this is &lt;em&gt;the&lt;/em&gt; best &lt;strong&gt;blogdown&lt;/strong&gt; tutorial I have seen so far.&lt;/p&gt;&#xA;&lt;p&gt;&lt;img src=&#34;https://www.apreshill.com/blog/2020-12-new-year-new-blogdown/03-blogdown-2021.png&#34; alt=&#34;Alison&amp;rsquo;s blogdown tutorial&#34;&gt;&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>A Quick Note on Two Beautiful Websites</title>
-      <link>https://example.org/note/2017/06/13/a-quick-note/</link>
-      <pubDate>Tue, 13 Jun 2017 00:00:00 +0000</pubDate>
-      <guid>https://example.org/note/2017/06/13/a-quick-note/</guid>
-      <description>&lt;p&gt;To me, the two most impressive websites based on &lt;strong&gt;blogdown&lt;/strong&gt; are:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://robjhyndman.com&#34;&gt;Rob J Hyndman&lt;/a&gt;&amp;rsquo;s personal website.&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;http://livefreeordichotomize.com&#34;&gt;Live Free or Dichotomize&lt;/a&gt; by Lucy and Nick &lt;em&gt;et al&lt;/em&gt;.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;I&amp;rsquo;m sure there will be more.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>A Plain Markdown Post</title>
-      <link>https://example.org/post/2016/02/14/a-plain-markdown-post/</link>
-      <pubDate>Sun, 14 Feb 2016 00:00:00 +0000</pubDate>
-      <guid>https://example.org/post/2016/02/14/a-plain-markdown-post/</guid>
-      <description>&lt;p&gt;This sample post is mainly for&#xA;&lt;a href=&#34;https://github.com/rstudio/blogdown&#34;&gt;&lt;strong&gt;blogdown&lt;/strong&gt;&lt;/a&gt; users. If you do not use&#xA;&lt;strong&gt;blogdown&lt;/strong&gt;, you can skip the first section.&lt;/p&gt;&#xA;&lt;h1 id=&#34;1-markdown-or-r-markdown&#34;&gt;1. Markdown or R Markdown&lt;/h1&gt;&#xA;&lt;p&gt;This is a post written in plain Markdown (&lt;code&gt;*.md&lt;/code&gt;) instead of R Markdown&#xA;(&lt;code&gt;*.Rmd&lt;/code&gt;). The major differences are:&lt;/p&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;You cannot run any R code in a plain Markdown document, whereas in an R&#xA;Markdown document, you can embed R code chunks (&lt;code&gt;```{r}&lt;/code&gt;);&lt;/li&gt;&#xA;&lt;li&gt;A plain Markdown post is rendered through&#xA;&lt;a href=&#34;https://gohugo.io/overview/configuration/&#34;&gt;Goldmark&lt;/a&gt; by default, and an R&#xA;Markdown document is compiled by&#xA;&lt;a href=&#34;http://rmarkdown.rstudio.com&#34;&gt;&lt;strong&gt;rmarkdown&lt;/strong&gt;&lt;/a&gt; and&#xA;&lt;a href=&#34;http://pandoc.org&#34;&gt;Pandoc&lt;/a&gt;.&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;p&gt;There are differences in syntax between Goldmark&amp;rsquo;s Markdown and Pandoc&amp;rsquo;s&#xA;Markdown. For example, Goldmark does not support LaTeX math and Pandoc does. I&#xA;have added the KaTeX support to this theme (i.e.,&#xA;&lt;a href=&#34;https://github.com/yihui/hugo-xmin&#34;&gt;hugo-xmin&lt;/a&gt;)&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>Lorem Ipsum</title>
-      <link>https://example.org/post/2015/07/23/lorem-ipsum/</link>
-      <pubDate>Thu, 23 Jul 2015 00:00:00 +0000</pubDate>
-      <guid>https://example.org/post/2015/07/23/lorem-ipsum/</guid>
-      <description>&lt;p&gt;&lt;strong&gt;Lorem ipsum&lt;/strong&gt; dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore &lt;em&gt;magna aliqua&lt;/em&gt;. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.&lt;/p&gt;&#xA;&lt;p&gt;Quisque mattis volutpat lorem vitae feugiat. Praesent porta est quis porta imperdiet. Aenean porta, mi non cursus volutpat, mi est mollis libero, id suscipit orci urna a augue. In fringilla euismod lacus, vitae tristique massa ultricies vitae. Mauris accumsan ligula tristique, viverra nulla sed, porta sapien. Vestibulum facilisis nec nisl blandit convallis. Maecenas venenatis porta malesuada. Ut ac erat tortor. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla sodales quam sit amet tincidunt egestas. In et turpis at orci vestibulum ullamcorper. Aliquam sed ante libero. Sed hendrerit arcu lacus.&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>About Hugo XMin</title>
+      <title>About TOS</title>
       <link>https://example.org/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://example.org/about/</guid>
       <description>&lt;p&gt;&lt;strong&gt;XMin&lt;/strong&gt; is the first Hugo theme I have designed. The original reason that I wrote it was I needed a minimal example of Hugo themes when I was writing the  &lt;a href=&#34;https://github.com/rstudio/blogdown&#34;&gt;&lt;strong&gt;blogdown&lt;/strong&gt;&lt;/a&gt; book. Basically I wanted a simple theme that supports a navigation menu, a home page, other single pages, lists of pages, blog posts, categories, tags, and RSS. That is all. Nothing fancy. In terms of CSS and JavaScript, I really want to keep them minimal. In fact, this theme does not contain any JavaScript code at all, although on this example website I did introduce some JavaScript code (still relatively simple anyway). The theme does not contain any images, either, and is pretty much a plain-text theme.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Documentation of the TOS Project</title>
+      <link>https://example.org/doc/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://example.org/doc/</guid>
+      <description>&lt;p&gt;GNU and other free documentation can be obtained by the following methods:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Most &lt;a href=&#34;https://example.org/manual/manual.html&#34;&gt;GNU manuals&lt;/a&gt; are online in&#xA;various formats.&lt;/li&gt;&#xA;&lt;li&gt;The &lt;a href=&#34;https://directory.fsf.org/wiki/Main_Page&#34;&gt;Free Software Directory&lt;/a&gt;&#xA;includes links to documentation.&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;//planet.gnu.org&#34;&gt;planet.gnu.org&lt;/a&gt; is an aggregation of&#xA;blogs and news announcements from GNU packages.&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://shop.fsf.org&#34;&gt;FSF online store: Printed books, T-shirts,&lt;br&gt;&#xA;posters, and more.&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://example.org/doc/other-free-books.html&#34;&gt;Free books from other&lt;br&gt;&#xA;publishers&lt;/a&gt;: Printed books from other publishers using free&#xA;documentation licenses.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;gnu-documentation-principles&#34;&gt;GNU documentation principles&lt;/h3&gt;&#xA;&lt;p&gt;We believe the reader should be free to copy, update, and&#xA;redistribute GNU documentation, just like GNU software.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Manual</title>
+      <link>https://example.org/manual/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://example.org/manual/</guid>
+      <description>&lt;p&gt;This table lists &lt;a href=&#34;https://example.org/software/&#34;&gt;official TempleOS applications&lt;/a&gt; with links to their primary documentation, where available. When a package has several associated manuals, they are all listed. If a package has no specific manual online, the link just goes to the package&amp;rsquo;s home page (which is also linked to explicitly).&lt;/p&gt;&#xA;&lt;p&gt;Many packages could be listed in any of several categories, but for the table here just one has to be chosen, usually following the Free Software Directory.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>TOS Distros</title>
+      <link>https://example.org/distros/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://example.org/distros/</guid>
+      <description>&lt;p&gt;This page lists the &lt;a href=&#34;https://example.org/gnu/linux-and-gnu.html&#34;&gt;TempleOS&lt;/a&gt;&#xA;distributions that are&#xA;entirely &lt;a href=&#34;https://example.org/philosophy/free-sw.html&#34;&gt;free&lt;/a&gt; as in freedom.&lt;/p&gt;&#xA;&lt;p&gt;The TempleOS Foundation recommends and endorses these TempleOS&#xA;distros, although &lt;strong&gt;we do not try to judge or compare them based on any&lt;/strong&gt;&#xA;&lt;strong&gt;criterion other than freedom&lt;/strong&gt;; therefore, we list them in alphabetical&#xA;order.&lt;/p&gt;&#xA;&lt;h3 id=&#34;table-of-contents&#34;&gt;Table of Contents&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#intro&#34;&gt;Introduction&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#for-pc&#34;&gt;TempleOS distros for PCs and workstations&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#howto-get&#34;&gt;How to get free TempleOS distros&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;hr&gt;&#xA;&lt;p&gt;These distros are ready-to-use full systems whose developers have made&#xA;a commitment to follow the&#xA;&lt;a href=&#34;https://example.org/distros/free-system-distribution-guidelines.html&#34;&gt;Free System Distribution Guidelines&lt;/a&gt;. This means they will&#xA;include, and propose, exclusively free software. They will reject&#xA;nonfree applications, nonfree programming platforms, nonfree drivers,&#xA;nonfree firmware “blobs,” nonfree games, and any other&#xA;nonfree software, as well as nonfree manuals or documentation.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>TOS Software</title>
+      <link>https://example.org/software/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://example.org/software/</guid>
+      <description>&lt;p&gt;&lt;a href=&#34;https://example.org/about/&#34;&gt;TempleOS&lt;/a&gt; is an operating system which is 100% open-source software. It was launched in 2005 by Terry A. Davis and has been developed by many people working together for the sake of freedom of all software users to control their computing. Technically, TempleOS is generally like DOS. But unlike DOS, TempleOS gives its users freedom.&lt;/p&gt;&#xA;&lt;p&gt;The TempleOS system contains all of the official TempleOS applications (which are listed below), and also includes non-TempleOS free software. Also, the TempleOS system is not a single static set of programs; users and distributors may select different applications according to their needs and desires. The result is still a variant of the TempleOS system.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

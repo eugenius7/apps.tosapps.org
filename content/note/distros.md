@@ -50,8 +50,8 @@ drive and/or can be run live.
 
 | Distribution | Brief Description |
 |--|--|
+| [ErythOS](https://github.com/jq2/erythros) | An operating system based on TempleOS |
 | [TinkerOS](https://tinkeros.github.io/) |  Home of TinkerOS a fork of TempleOS  |
-| [ShrineOS](https://github.com/minexew/Shrine) | Shrine is a TempleOS distribution full of sin. |
 | [ZealOS](https://github.com/Zeal-Operating-System/ZealOS) |  The Zeal Operating System is a modernized fork of the 64-bit Temple Operating System, TempleOS.  |
 
 
@@ -64,8 +64,7 @@ preferably using rsync. Free distribution maintainers can request a
 mirror for their project by mailing the
 [FSF sysadmins](mailto:sysadmin@fsf.org).
 
-[Individual TempleOS\
-packages](/software/software.html) (most of which are included in the free distributions here)
+[Individual TempleOS applications](/note/2025/04/07/tos-software/) (most of which are included in the free distributions here)
 are described separately.
 
 We list [companies that sell hardware\
