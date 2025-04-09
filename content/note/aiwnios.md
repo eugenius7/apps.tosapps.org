@@ -19,7 +19,7 @@ machines,although other architectures are planned for the future. This project i
 
 ## Screenshot
 <div align="center">
-    <img src="img/scrot.png" alt="Aiwnios Screenshot" width="80%">
+    <img src="/img/scrot.png" alt="Aiwnios Screenshot" width="80%">
 </div> <!-- whoever did the <center> was retarded, thats HTML3 (!) and only applies to text -->
 
 ## Building Aiwnios
@@ -86,7 +86,7 @@ Your on your own. Use homebrew to install packages, rest is same as FreeBSD
 # TUI Mode
 
 <div align="center">
-    <img src="img/tui.png" alt="TUI Screenshot" width="80%">
+    <img src="/img/tui.png" alt="TUI Screenshot" width="80%">
 </div> <!-- whoever did the <center> was retarded, thats HTML3 (!) and only applies to text -->
 
 You can use the `--tui` to run a DolDoc enviroment in the terminal. ***Use `ExitAiwnios;` to leave.***

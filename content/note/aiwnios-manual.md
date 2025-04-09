@@ -7,4 +7,4 @@ title: 'Aiwnios Manual'
 
 This manual (aiwnios) is available in the following formats:
 
-- [DEVMAN.MD](/note/2025/04/07/aiwnios-devman/)
+- [MD](/note/2025/04/07/aiwnios-devman/)

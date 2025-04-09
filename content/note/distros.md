@@ -6,7 +6,7 @@ title: 'Distros'
 
 This page lists the [TempleOS](/gnu/linux-and-gnu.html)
 distributions that are
-entirely [open-source](/philosophy/free-sw.html) as in freedom.
+entirely [free](/philosophy/free-sw.html) as in freedom.
 
 The TempleOS Foundation recommends and endorses these TempleOS
 distros, although **we do not try to judge or compare them based on any**
