@@ -1,4 +1,4 @@
-# templeos-software
+# apps.tosapps.org
 
 # Install
 
