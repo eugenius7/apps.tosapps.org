@@ -65,6 +65,5 @@ mirror for their project by mailing the
 [Individual TempleOS applications](/note/2025/04/07/tos-software/) (most of which are included in the free distributions here)
 are described separately.
 
-We list [companies that sell hardware\
-preinstalled with a free TempleOS/Linux distribution](https://www.fsf.org/resources/hw/endorsement/respects-your-freedom) separately.
+We list [companies that sell hardware preinstalled with a free TempleOS distribution](https://www.fsf.org/resources/hw/endorsement/respects-your-freedom) separately.
 

@@ -1,0 +1,110 @@
+.carousel-wrap {
+	width: 100%;
+	position: relative;
+	background-color: #202020;
+	overflow: hidden;
+}
+.carousel {
+ 	display: flex;
+ 	display: -webkit-flex;
+	display: -ms-flexbox;
+	flex-direction: row;
+	-webkit-flex-direction: row;
+	-ms-flex-direction: row;
+	position: relative;
+	width: 2000px;
+	left: 66px;
+}
+.carousel-banner {
+	height: 20px;
+	background-color: #202020;
+	width: 100%;
+}
+.carousel .item {
+	width: 350px;
+	margin: 0px 3px 0px 3px;
+	box-shadow: 3px 3px 5px black;
+	transition: all .15s ease-in-out;
+	border: 1px solid grey;
+}
+.carousel .item:hover {
+	transform: scale(1.02);
+	box-shadow: 5px 5px 15px black;
+}
+.carousel .title {
+	padding: 3px 10px 5px 10px;
+	line-height: 1.2;
+	width: 100%;
+	height: 70px;
+	background-color: black;
+	font-size: 17.5px;
+	font-family: Verdana, Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.carousel a {
+	color: #F7E7AE;
+}
+.carousel .img-wrap {
+	overflow: hidden;
+	height: 195px;
+	width: 100%;
+}
+.carousel img {
+	width: 100%;
+}
+.carousel-next, .carousel-prev {
+ 	display: flex;
+ 	display: -webkit-flex;
+	display: -ms-flexbox;
+	-webkit-justify-content: center;
+	-ms-flex-justify-content: center;
+	-webkit-align-items: center;
+	-ms-flex-align-items: center;
+	position: absolute;
+	width: 63px;
+	font-size: 40px;
+	height: 267px;
+	top: 0px;
+	background-color: rgba(255,255,255,0.5);
+	font-family: "Time New Roman", Verdana, Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+	cursor: pointer;
+}
+.carousel-prev-disabled {
+ 	display: flex;
+ 	display: -webkit-flex;
+	display: -ms-flexbox;
+	-webkit-justify-content: center;
+	-ms-flex-justify-content: center;
+	-webkit-align-items: center;
+	-ms-flex-align-items: center;
+	position: absolute;
+	width: 63px;
+	font-size: 40px;
+	height: 267px;
+	top: 0px;
+	background-color: rgba(255,255,255,0);
+	color: rgba(255,255,255,0);
+	font-family: "Time New Roman", Verdana, Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+	cursor: pointer;
+}
+.carousel-next:hover {
+	color: #B7AB6A;
+	background-color: rgba(255,255,255,0.9);
+}
+.carousel-prev:hover {
+	color: #B7AB6A;
+	background-color: rgba(255,255,255,0.9);
+}
+.carousel-next {
+	left: 1137px;
+}
+.carousel-prev {
+	left: 0px;
+}
+@media screen and (max-width: 1200px) {
+	.carousel-wrap {
+		display: none;
+	}
+	.carousel-banner {
+		display: none;
+	}
+}
